@@ -17,28 +17,28 @@ func TestCalculateElfCalories(t *testing.T) {
 }
 
 func TestInsertNewMax(t *testing.T) {
-		input := []int{
-			0,
-            50624,
-            50623,
-            80624,
-            40624,
-            50624,
-            90655,
-		}
+	input := []int{
+		0,
+		50624,
+		50623,
+		80624,
+		40624,
+		50624,
+		90655,
+	}
 
-        want := [][]int{
-            {0,0,0},
-            {50624,0,0},
-            {50624,50623,0},
-            {80624,50624,50623},
-            {80624,50624,50623},
-            {80624,50624,50624},
-            {90655,80624,50624},
-        }
+	want := [][]int{
+		{0, 0, 0},
+		{50624, 0, 0},
+		{50624, 50623, 0},
+		{80624, 50624, 50623},
+		{80624, 50624, 50623},
+		{80624, 50624, 50624},
+		{90655, 80624, 50624},
+	}
 
-		for testIndex, testOutput := range want {
-            InsertNewMax(testIndex, input[testIndex])
-			assert.Equal(t, testOutput, max)
-		}
+	for testIndex, testOutput := range want {
+		InsertNewMax(testIndex, input[testIndex])
+		assert.Equal(t, testOutput, max)
+	}
 }

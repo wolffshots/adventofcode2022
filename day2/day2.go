@@ -20,7 +20,7 @@ var shapeValues = map[string]int{
 // draw 3
 // loss 0
 
-func calculateScore1(opponentShape string, selfShape string) int {
+func CalculateScoreGivenInput(opponentShape string, selfShape string) int {
 	score := shapeValues[selfShape]
 	switch selfShape {
 	case "X": // Rock
@@ -54,7 +54,7 @@ func calculateScore1(opponentShape string, selfShape string) int {
 	return score
 }
 
-func calculateScore2(opponentShape string, selfShape string) int {
+func CalculateScoreGivenOutcome(opponentShape string, selfShape string) int {
 	score := 0
 	switch selfShape {
 	case "X": // lose
@@ -97,12 +97,15 @@ func main() {
 		fmt.Println(err)
 	}
 	rounds := strings.Split(string(data), "\n")
-	totalScore := 0
+	totalScoreBasedOnInput := 0
+	totalScoreBasedOnOutcome := 0
 	for roundIndex, roundValue := range rounds {
 		chosenShapes := strings.Split(roundValue, " ")
-		roundScore := calculateScore2(chosenShapes[0], chosenShapes[1])
-		totalScore = totalScore + roundScore
-		fmt.Printf("round %d had %s as opponent and %s as self and a score of: %d\n", roundIndex, chosenShapes[0], chosenShapes[1], roundScore)
+		roundScoreBasedOnInput := CalculateScoreGivenInput(chosenShapes[0], chosenShapes[1])
+		roundScoreBasedOnOutcome := CalculateScoreGivenOutcome(chosenShapes[0], chosenShapes[1])
+		totalScoreBasedOnInput = totalScoreBasedOnInput + roundScoreBasedOnInput
+		totalScoreBasedOnOutcome = totalScoreBasedOnOutcome + roundScoreBasedOnOutcome
+		fmt.Printf("round %d had %s as opponent and %s as self and a score of: %d/%d\n", roundIndex+1, chosenShapes[0], chosenShapes[1], roundScoreBasedOnInput, roundScoreBasedOnOutcome)
 	}
-	fmt.Printf("Total score: %d", totalScore)
+	fmt.Printf("Total score: %d/%d", totalScoreBasedOnInput, totalScoreBasedOnOutcome)
 }

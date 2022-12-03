@@ -47,7 +47,7 @@ func InsertNewMax(elfIndex, newValue int) {
 			maxElfIndex[maxIndex] = elfIndex
 			// break to prevent re-insertion
 			break
-        }
+		}
 	}
 }
 
@@ -64,7 +64,7 @@ func main() {
 		// check if we have a new max
 		InsertNewMax(elfIndex, newValue)
 	}
-    
+
 	fmt.Println("\nMaxes:")
 	topThree := 0
 	for i, val := range max {
