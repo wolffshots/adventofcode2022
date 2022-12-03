@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/stretchr/testify/assert" // boolean assertions for pass and fail
+	"testing"                            // testing library
 )
 
 func TestPriority(t *testing.T) {
@@ -33,14 +33,14 @@ func TestFindDuplicateItem(t *testing.T) {
 }
 
 func TestFindCommonItem(t *testing.T) {
-    input := [][]string{
-        {"vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg"},
-        {"wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"},
-        {"aaaaaaa", "bbbbbbb", "ccccccc"},
-    }
-    want := []int32{'r', 'Z', -1}
-    for testIndex, testOutput := range want {
-        result := FindCommonItem(input[testIndex])
-        assert.Equal(t, testOutput, result)
-    }
+	input := [][]string{
+		{"vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg"},
+		{"wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"},
+		{"aaaaaaa", "bbbbbbb", "ccccccc"},
+	}
+	want := []int32{'r', 'Z', -1}
+	for testIndex, testOutput := range want {
+		result := FindCommonItem(input[testIndex])
+		assert.Equal(t, testOutput, result)
+	}
 }
