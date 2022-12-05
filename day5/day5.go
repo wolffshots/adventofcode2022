@@ -100,7 +100,6 @@ func Move(board [][]string, move string, singular bool) [][]string {
 		if singular {
 			tempBoard[destination] = append(tempBoard[destination], board[origin][len(board[origin])-1-index])
 		} else {
-			//            tempBoard[destination] = append(tempBoard[destination], board[origin][len(board[origin])-1-index])
 			tempBoard[destination] = append(tempBoard[destination], board[origin][len(board[origin])-int(number)+index])
 		}
 
