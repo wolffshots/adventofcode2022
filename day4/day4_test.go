@@ -5,7 +5,7 @@ import (
 	"testing"                            // testing library
 )
 
-func TestPriority(t *testing.T) {
+func TestRangeContains(t *testing.T) {
 	input := [][]string{{"2-4", "6-8"}, {"2-3", "4-5"}, {"5-7", "7-9"}, {"2-8", "3-7"}}
 	want := [][]int{{0, 0}, {0, 0}, {1, 1}, {2, 1}}
 	for testIndex, testOutput := range want {
