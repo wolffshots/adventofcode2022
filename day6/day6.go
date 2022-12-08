@@ -31,7 +31,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Advent of Code - Day 5\n===============-======")
+	fmt.Println("Advent of Code - Day 6\n===============-======")
 	fmt.Println()
 
 	input := strings.Split(string(data), "\n")
