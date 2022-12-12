@@ -202,11 +202,11 @@ func Absolute[T Num](input T) T {
 }
 
 func GreatestCommonDivisor(lcm int, div int) int {
-    lcm, div = Absolute(lcm), Absolute(div)
-    for div != 0 {
-        lcm, div = div, lcm%div
+	lcm, div = Absolute(lcm), Absolute(div)
+	for div != 0 {
+		lcm, div = div, lcm%div
 	}
-    return lcm
+	return lcm
 }
 
 func FormatMonkeysInspectedCounters(monkeys []Monkey) string {
