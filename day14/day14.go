@@ -94,7 +94,8 @@ func Format(im *image.Alpha, addIndices bool) string {
 	return formatted
 }
 
-func SimulateSand(im *image.Alpha, floor int) {
+func SimulateSand(im *image.Alpha, floor int) bool {
+	changed := false
 	for y := im.Rect.Min.Y; y <= im.Rect.Max.Y; y++ {
 		for x := im.Rect.Min.X; x <= im.Rect.Max.X; x++ {
 			if im.AlphaAt(x, y).A == 'o' || im.AlphaAt(x, y).A == '~' {
@@ -102,21 +103,25 @@ func SimulateSand(im *image.Alpha, floor int) {
 					im.Set(x, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
 					if im.AlphaAt(x, y).A != '~' {
 						im.Set(x, y, color.Alpha{A: 0})
+                        changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
 					}
 				} else if im.AlphaAt(x-1, y+1).A == 0 && y != floor {
 					im.Set(x-1, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
 					if im.AlphaAt(x, y).A != '~' {
 						im.Set(x, y, color.Alpha{A: 0})
+                        changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
 					}
 				} else if im.AlphaAt(x+1, y+1).A == 0 && y != floor {
 					im.Set(x+1, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
 					if im.AlphaAt(x, y).A != '~' {
 						im.Set(x, y, color.Alpha{A: 0})
+                        changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
 					}
 				}
 			}
 		}
 	}
+	return changed
 }
 
 func DeepCopyPix(dest *[]uint8, src *image.Alpha) {
@@ -152,10 +157,10 @@ func SimulateCaveIn(im *image.Alpha, floor int) int {
 		oldImagePix = append(oldImagePix, (im.Pix)[i])
 	}
 	for iteration := 0; iteration < MaxIterations; iteration++ {
-		DeepCopyPix(&oldImagePix, im)
+//		DeepCopyPix(&oldImagePix, im)
 		im.Set(500, 0, color.Alpha{A: 'o'})
-		SimulateSand(im, floor)
-		if im.AlphaAt(500, 0).A == 'o' || Equals(&im.Pix, &oldImagePix) {
+		changed := SimulateSand(im, floor)
+		if !changed || im.AlphaAt(500, 0).A == 'o' /*|| Equals(&im.Pix, &oldImagePix)*/ {
 			if im.AlphaAt(500, 0).A == 'o' {
 				iteration++ // saves on the final check
 			} else {
