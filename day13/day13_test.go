@@ -51,7 +51,7 @@ func TestMatches(t *testing.T) {
 		false,
 	}
 	for testIndex, want := range wants {
-        result := Matches(packets[testIndex][0], packets[testIndex][1])
+		result := Matches(packets[testIndex][0], packets[testIndex][1])
 		assert.Equal(t, want, result)
 	}
 }

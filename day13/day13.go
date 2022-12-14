@@ -17,23 +17,23 @@ func main() {
 		log.Fatal(err)
 	}
 	defer func(file *os.File) {
-        err := file.Close()
-        if err != nil {
-            log.Fatal("couldn't close file")
-        }
-    }(file)
+		err := file.Close()
+		if err != nil {
+			log.Fatal("couldn't close file")
+		}
+	}(file)
 	packets := parseInput(file)
-    fmt.Println("Advent of Code - Day 13\n===============-=======")
+	fmt.Println("Advent of Code - Day 13\n===============-=======")
 
-    fmt.Println("Results:")
-    fmt.Printf("\t%-14s: %6d\n","Sum of indices", solvePart1(packets))
-    fmt.Printf("\t%-14s: %6d\n","Decoder key", solvePart2(packets))
+	fmt.Println("Results:")
+	fmt.Printf("\t%-14s: %6d\n", "Sum of indices", solvePart1(packets))
+	fmt.Printf("\t%-14s: %6d\n", "Decoder key", solvePart2(packets))
 }
 
 func parseInput(r io.Reader) [][]interface{} {
 	scanner := bufio.NewScanner(r)
-    var packets [][]interface{}
-    var pair []interface{}
+	var packets [][]interface{}
+	var pair []interface{}
 
 	for scanner.Scan() {
 		if scanner.Text() == "" {
@@ -96,7 +96,7 @@ func compare(p1 interface{}, p2 interface{}) int {
 }
 
 func solvePart2(packets [][]interface{}) int {
-    var newPacket []interface{}
+	var newPacket []interface{}
 	for _, pair := range packets {
 		newPacket = append(newPacket, pair...)
 	}
