@@ -103,47 +103,25 @@ func SimulateSand(im *image.Alpha, floor int) bool {
 					im.Set(x, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
 					if im.AlphaAt(x, y).A != '~' {
 						im.Set(x, y, color.Alpha{A: 0})
-                        changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
+						changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
 					}
 				} else if im.AlphaAt(x-1, y+1).A == 0 && y != floor {
 					im.Set(x-1, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
 					if im.AlphaAt(x, y).A != '~' {
 						im.Set(x, y, color.Alpha{A: 0})
-                        changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
+						changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
 					}
 				} else if im.AlphaAt(x+1, y+1).A == 0 && y != floor {
 					im.Set(x+1, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
 					if im.AlphaAt(x, y).A != '~' {
 						im.Set(x, y, color.Alpha{A: 0})
-                        changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
+						changed = !(y == im.Rect.Max.Y-1 && (x == im.Rect.Max.X || x == im.Rect.Min.X))
 					}
 				}
 			}
 		}
 	}
 	return changed
-}
-
-func DeepCopyPix(dest *[]uint8, src *image.Alpha) {
-	if len(*dest) != len(src.Pix) {
-		log.Fatal("trying to deep copy unequal slices")
-	}
-	for i := 0; i < len(src.Pix); i++ {
-		(*dest)[i] = src.Pix[i]
-	}
-}
-
-func Equals(one, two *[]uint8) bool {
-	if len(*one) != len(*two) {
-		log.Fatalf("shouldn't be comparing different sizes")
-		return false
-	}
-	for index := len(*two) - 1; index >= 0; index-- {
-		if (*one)[index] != (*two)[index] {
-			return false
-		}
-	}
-	return true
 }
 
 func SimulateCaveIn(im *image.Alpha, floor int) int {
@@ -157,10 +135,9 @@ func SimulateCaveIn(im *image.Alpha, floor int) int {
 		oldImagePix = append(oldImagePix, (im.Pix)[i])
 	}
 	for iteration := 0; iteration < MaxIterations; iteration++ {
-//		DeepCopyPix(&oldImagePix, im)
 		im.Set(500, 0, color.Alpha{A: 'o'})
 		changed := SimulateSand(im, floor)
-		if !changed || im.AlphaAt(500, 0).A == 'o' /*|| Equals(&im.Pix, &oldImagePix)*/ {
+		if !changed || im.AlphaAt(500, 0).A == 'o' {
 			if im.AlphaAt(500, 0).A == 'o' {
 				iteration++ // saves on the final check
 			} else {
