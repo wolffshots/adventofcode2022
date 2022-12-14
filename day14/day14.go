@@ -163,7 +163,7 @@ func SimulateCaveIn(im *image.Alpha, floor int) int {
                 im.Set(500, 0, color.Alpha{A: '~'})
                 SimulateSand(im, floor)
             }
-//			im.SetAlpha(500, 0, color.Alpha{A: '+'})
+			im.SetAlpha(500, 0, color.Alpha{A: '+'})
 			return iteration
 		}
 	}
@@ -270,8 +270,8 @@ func main() {
 
 	fmt.Println("Results:")
 	fmt.Printf("\tData loading and converting took %s\n", elapsed0)
-	fmt.Println("\tIt took", steps1, "units to stabilise part one") // 755
+	fmt.Println("\tIt took", steps1, "units to stabilise part one (should be", 755,"with my example input)") // 755
 	fmt.Printf("\tSimulate function for part one took %s\n", elapsed1)
-	fmt.Println("\tIt took", steps2, "units to stabilise part two") // 29805
+    fmt.Println("\tIt took", steps2, "units to stabilise part two (should be", 29805,"with my example input)") // 29805
 	fmt.Printf("\tSimulate function for part one took %s\n", elapsed2)
 }
