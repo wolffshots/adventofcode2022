@@ -100,20 +100,19 @@ func SimulateSand(im *image.Alpha, floor int) {
 			if im.AlphaAt(x, y).A == 'o' || im.AlphaAt(x, y).A == '~' {
 				if im.AlphaAt(x, y+1).A == 0 && y != floor {
 					im.Set(x, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
-                    if im.AlphaAt(x, y).A != '~' {
-                        im.Set(x, y, color.Alpha{A: 0})
-                    }
+					if im.AlphaAt(x, y).A != '~' {
+						im.Set(x, y, color.Alpha{A: 0})
+					}
 				} else if im.AlphaAt(x-1, y+1).A == 0 && y != floor {
 					im.Set(x-1, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
-                    if im.AlphaAt(x, y).A != '~' {
-                        im.Set(x, y, color.Alpha{A: 0})
-                    }
+					if im.AlphaAt(x, y).A != '~' {
+						im.Set(x, y, color.Alpha{A: 0})
+					}
 				} else if im.AlphaAt(x+1, y+1).A == 0 && y != floor {
-					// fall
 					im.Set(x+1, y+1, color.Alpha{A: im.AlphaAt(x, y).A})
-                    if im.AlphaAt(x, y).A != '~' {
-                        im.Set(x, y, color.Alpha{A: 0})
-                    }
+					if im.AlphaAt(x, y).A != '~' {
+						im.Set(x, y, color.Alpha{A: 0})
+					}
 				}
 			}
 		}
@@ -157,12 +156,12 @@ func SimulateCaveIn(im *image.Alpha, floor int) int {
 		im.Set(500, 0, color.Alpha{A: 'o'})
 		SimulateSand(im, floor)
 		if im.AlphaAt(500, 0).A == 'o' || Equals(&im.Pix, &oldImagePix) {
-            if im.AlphaAt(500, 0).A == 'o' {
-                iteration++ // saves on the final check
-            }else{
-                im.Set(500, 0, color.Alpha{A: '~'})
-                SimulateSand(im, floor)
-            }
+			if im.AlphaAt(500, 0).A == 'o' {
+				iteration++ // saves on the final check
+			} else {
+				im.Set(500, 0, color.Alpha{A: '~'})
+				SimulateSand(im, floor)
+			}
 			im.SetAlpha(500, 0, color.Alpha{A: '+'})
 			return iteration
 		}
@@ -227,12 +226,13 @@ func ShowCave(prefix string, im *image.Alpha) {
 func main() {
 	flag.BoolVar(&verbose, "v", false, "Sets the output to verbose")
 	flag.Parse()
-	data, err := os.ReadFile("data.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
 	fmt.Println("Advent of Code - Day 14\n===============-=======")
-	input := strings.Split(string(data), "\n")
+	var input []string
+	if data, err := os.ReadFile("data.txt"); err != nil {
+		log.Fatalf("Failed to open file: %v", err)
+	} else {
+		input = strings.Split(string(data), "\n")
+	}
 
 	minX, maxX, minY, maxY := 500, 500, 0, 0
 
@@ -270,8 +270,8 @@ func main() {
 
 	fmt.Println("Results:")
 	fmt.Printf("\tData loading and converting took %s\n", elapsed0)
-	fmt.Println("\tIt took", steps1, "units to stabilise part one (should be", 755,"with my example input)") // 755
+	fmt.Println("\tIt took", steps1, "units to stabilise part one (should be", 755, "with my example input)") // 755
 	fmt.Printf("\tSimulate function for part one took %s\n", elapsed1)
-    fmt.Println("\tIt took", steps2, "units to stabilise part two (should be", 29805,"with my example input)") // 29805
+	fmt.Println("\tIt took", steps2, "units to stabilise part two (should be", 29805, "with my example input)") // 29805
 	fmt.Printf("\tSimulate function for part one took %s\n", elapsed2)
 }
