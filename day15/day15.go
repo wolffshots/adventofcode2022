@@ -4,19 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"image"
-    "image/color"
-    "image/png"
 	"log"
 	"math"
 	"os"
 	"strconv"
 	"strings"
-	"sync"
-	"time"
+    "time"
 )
 
 var verbose bool
-var finalIm *image.Alpha
 
 func Min(a, b int) int {
 	if a < b {
@@ -64,7 +60,7 @@ func Load(input []string, minX, maxX, minY, maxY *int, sensors *[]Sensor) {
 		xSensor := Atoi(strings.Split(sensorInput[len("Sensor at "):], ", ")[0][2:])
 		ySensor := Atoi(strings.Split(sensorInput[len("Sensor at "):], ", ")[1][2:])
 		newSensor := image.Point{X: xSensor, Y: ySensor}
-		dist := ManhattanDist(newBeacon, newSensor)
+		dist := ManhattanDist(&newBeacon, &newSensor)
 		sensor := Sensor{
 			sensor:        newSensor,
 			nearestBeacon: newBeacon,
@@ -73,100 +69,69 @@ func Load(input []string, minX, maxX, minY, maxY *int, sensors *[]Sensor) {
 
 		*minX = Min(Min(*minX, xBeacon), Min(*minX, xSensor-dist))
 		*maxX = Max(Max(*maxX, xBeacon), Max(*maxX, xSensor+dist))
-		*minY = Min(Min(*minY, yBeacon), Min(*minY, ySensor-dist))
-		*maxY = Max(Max(*maxY, yBeacon), Max(*maxY, ySensor+dist))
+		*minY = Min(Min(*minY, yBeacon), Min(*minY, ySensor))
+		*maxY = Max(Max(*maxY, yBeacon), Max(*maxY, ySensor))
 		*sensors = append(*sensors, sensor)
 
 	}
 }
 
-func WriteImage(path string, im *image.Alpha) {
-	if out, err := os.Create(path); err != nil {
-		log.Fatalf("couldn't write image: %v", err)
-	} else {
-		if err := png.Encode(out, im); err != nil {
-			log.Fatalf("couldn't write image: %v", err)
-		} else {
-			if err := out.Close(); err != nil {
-				log.Fatalf("couldn't close image: %v", err)
-			}
-		}
-	}
-}
-
-func ManhattanDist(dest, src image.Point) int {
+func ManhattanDist(dest, src *image.Point) int {
 	return Abs(dest.X-src.X) + Abs(dest.Y-src.Y)
 }
 
-func (s *Sensor) InRangeOf(y int) bool {
-	return s.sensor.Y == y || s.nearestBeacon.Y == y || (s.sensor.Y+s.clearRange >= y && s.sensor.Y-s.clearRange <= y)
+func IsNotPresent(c*image.Point, s*Sensor)bool{
+    if ManhattanDist(c, &s.sensor) <= s.clearRange{
+        return true
+    }
+    return false
 }
 
-func CountInvalidSpots(im *image.Alpha, minX, maxX, yLine int) int {
-	count := 0
-	for x := minX; x < maxX; x++ {
-		if im.AlphaAt(x, yLine).A != 0 && im.AlphaAt(x, yLine).A != 'B' {
-			count++
-		}
-	}
-	return count
+func IsInRangeOf(c*image.Point, s*Sensor)bool{
+    if ManhattanDist(c, &s.sensor) <= s.clearRange && !(c.X == s.nearestBeacon.X && c.Y == s.nearestBeacon.Y ) && !(c.X == s.sensor.X && c.Y == s.sensor.Y ) {
+        return true
+    }
+    return false
 }
 
-func PrintImage(im *image.Alpha) {
-	for y := im.Rect.Min.Y; y < im.Rect.Max.Y; y++ {
-    fmt.Printf("%3d ", y+1)
-		for x := im.Rect.Min.X; x < im.Rect.Max.X; x++ {
-            if im.AlphaAt(x, im.Rect.Min.Y).A != 0 {
-                fmt.Printf("  ")
-			} else {
-                fmt.Printf("0 ")
-			}
-		}
-		fmt.Println()
-	}
+func PointsOutsideOfSensor(sensor*Sensor) []image.Point{
+    var points []image.Point
+
+    points = append(points, image.Point{X: sensor.sensor.X, Y: sensor.sensor.Y-sensor.clearRange-1})
+    points = append(points, image.Point{X: sensor.sensor.X, Y: sensor.sensor.Y+sensor.clearRange+1})
+    for y := sensor.sensor.Y-sensor.clearRange; y <= sensor.sensor.Y+sensor.clearRange; y++ {
+        diff := sensor.clearRange - Abs(sensor.sensor.Y - y) + 1
+        points = append(points, image.Point{X: sensor.sensor.X-diff, Y: y})
+        points = append(points, image.Point{X: sensor.sensor.X+diff, Y: y})
+    }
+//    fmt.Println(sensor.sensor.X, sensor.sensor.Y, sensor.clearRange, points)
+    return points
 }
 
-func CheckRow(sensors *[]Sensor, minX, y int, pix *[]uint8) int {
-    count := 0
-	for _, sensor := range *sensors {
-		if sensor.InRangeOf(y) {
-			if sensor.sensor.Y == y {
-                finalIm.Set(sensor.sensor.X,sensor.sensor.Y,color.Alpha{A:'S'})
-				(*pix)[sensor.sensor.X-minX] = 'S'
-				count++
-			} else if sensor.nearestBeacon.Y == y {
-                finalIm.Set(sensor.sensor.X,sensor.nearestBeacon.Y,color.Alpha{A:'B'})
-				(*pix)[sensor.nearestBeacon.X-minX] = 'B'
-			}
-			index := 0
-			for x := sensor.sensor.X - sensor.clearRange; x < sensor.sensor.X+sensor.clearRange; x++ {
-				index = x - minX
-				pixel := &(*pix)[index]
-				if *pixel != 'X' && *pixel != 'S' && *pixel != 'B' && ManhattanDist(image.Point{X: x, Y: y}, sensor.sensor) <= sensor.clearRange {
-                    finalIm.Set(x,y,color.Alpha{A:'X'})
-                    *pixel = 'X'
-					count++
-				}
-			}
-		}
-	}
-	return count
-}
-
-func CountRows(y1, y2, minX, maxX int, counts *[]int, sensors *[]Sensor, wg *sync.WaitGroup) {
-	for y := y1; y < y2; y++ {
-		rect := image.Rectangle{Min: image.Point{X: minX, Y: y}, Max: image.Point{X: maxX + 1, Y: y + 1}}
-		im := image.NewAlpha(rect)
-        PrintImage(im)
-        (*counts)[y] = CheckRow(sensors, minX, y, &im.Pix)
-	}
-	wg.Done()
+func FindOpenPoint(points*[][]image.Point, sensors *[]Sensor, size int)image.Point{
+    for _, pointForSensor := range *points {
+        for _, point := range pointForSensor {
+            if point.X <= size &&point.X >= 0 && point.Y <= size &&point.Y >= 0 {
+                inRangeOfAtLeastOne := false
+                for _, sensor := range *sensors {
+                    if ManhattanDist(&point, &sensor.sensor) <= sensor.clearRange{
+                        inRangeOfAtLeastOne = true
+                    }
+                }
+                if !inRangeOfAtLeastOne{
+                    fmt.Println(point)
+                    return point
+                }
+            }
+        }
+    }
+    return image.Point{X:-1, Y:-1}
 }
 
 func main() {
 	flag.BoolVar(&verbose, "v", false, "Sets the output to verbose")
 	flag.Parse()
-	fmt.Println("Advent of Code - Day 15\n===============-=======")
+	fmt.Println("Advent of Code - Day 15\n<=============>-<=====>")
 	var input []string
 	if data, err := os.ReadFile("data.txt"); err != nil {
 		log.Fatalf("Failed to open file: %v", err)
@@ -176,28 +141,33 @@ func main() {
 	minX, maxX, minY, maxY := math.MaxInt, math.MinInt, math.MaxInt, math.MinInt
 	var sensors []Sensor
 	Load(input, &minX, &maxX, &minY, &maxY, &sensors)
-
-	counts := make([]int, 20)
-	checkY := 10
-	startY := 0
-	endY := 20
-	divisor := 50
-
-    rect := image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 20, Y: 20}}
-    finalIm = image.NewAlpha(rect)
-
-	start := time.Now()
-	step := Max((endY-startY)/divisor, 1)
-	var wg sync.WaitGroup
-	for y := startY; y < endY; y += step {
-		go CountRows(y, Min(y+step, endY), minX, maxX, &counts, &sensors, &wg)
-		wg.Add(1)
-	}
-	wg.Wait()
-	fmt.Printf("Total execution time with divisor of %d and step of %d:   \t%v\n", divisor, step, time.Since(start))
-	fmt.Printf("Average execution time with divisor of %d and step of %d: \t%.2fms\n", divisor, step, float64(time.Since(start).Milliseconds())/float64(endY-startY))
-
-	fmt.Printf("y: %d=%d (should be %d with my input or %d with the example)\n", checkY, counts[checkY], 4737567, 26)
-	PrintImage(finalIm)
-    fmt.Println(finalIm.Pix)
+    const size = 4000000
+    const lineNo = size/2
+    count:=0
+    start:=time.Now()
+        count =0
+        for x := minX; x < maxX; x++ {
+            inRange := false
+            for _, sensor := range sensors {
+                if IsInRangeOf(&image.Point{X: x, Y: lineNo}, &sensor){
+                    inRange = true
+                }
+            }
+            if inRange{
+                count++
+            }
+        }
+        fmt.Println("count:",count)
+    fmt.Println("that took about", time.Since(start))
+    var pointsToCheck [][]image.Point
+    start=time.Now()
+    for _, sensor := range sensors {
+        pointsToCheck = append(pointsToCheck, PointsOutsideOfSensor(&sensor))
+    }
+    fmt.Println("PointsOutsideOfSensor's took about", time.Since(start))
+    start=time.Now()
+    origin := FindOpenPoint(&pointsToCheck, &sensors, size)
+    fmt.Println("FindOpenPoint took about", time.Since(start))
+    tuningFreq:= origin.X*4000000+origin.Y
+    fmt.Println("Tuning freq:",tuningFreq)
 }
