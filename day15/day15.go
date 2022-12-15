@@ -4,7 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	"image/png"
+    "image/color"
+    "image/png"
 	"log"
 	"math"
 	"os"
@@ -15,6 +16,7 @@ import (
 )
 
 var verbose bool
+var finalIm *image.Alpha
 
 func Min(a, b int) int {
 	if a < b {
@@ -112,12 +114,12 @@ func CountInvalidSpots(im *image.Alpha, minX, maxX, yLine int) int {
 
 func PrintImage(im *image.Alpha) {
 	for y := im.Rect.Min.Y; y < im.Rect.Max.Y; y++ {
-		fmt.Printf("%3d ", y)
+    fmt.Printf("%3d ", y+1)
 		for x := im.Rect.Min.X; x < im.Rect.Max.X; x++ {
-			if im.AlphaAt(x, y).A != 0 {
-				fmt.Printf("%c ", im.AlphaAt(x, y).A)
+            if im.AlphaAt(x, im.Rect.Min.Y).A != 0 {
+                fmt.Printf("  ")
 			} else {
-				fmt.Printf("%c ", '.')
+                fmt.Printf("0 ")
 			}
 		}
 		fmt.Println()
@@ -125,13 +127,15 @@ func PrintImage(im *image.Alpha) {
 }
 
 func CheckRow(sensors *[]Sensor, minX, y int, pix *[]uint8) int {
-	count := 0
+    count := 0
 	for _, sensor := range *sensors {
 		if sensor.InRangeOf(y) {
 			if sensor.sensor.Y == y {
+                finalIm.Set(sensor.sensor.X,sensor.sensor.Y,color.Alpha{A:'S'})
 				(*pix)[sensor.sensor.X-minX] = 'S'
 				count++
 			} else if sensor.nearestBeacon.Y == y {
+                finalIm.Set(sensor.sensor.X,sensor.nearestBeacon.Y,color.Alpha{A:'B'})
 				(*pix)[sensor.nearestBeacon.X-minX] = 'B'
 			}
 			index := 0
@@ -139,21 +143,22 @@ func CheckRow(sensors *[]Sensor, minX, y int, pix *[]uint8) int {
 				index = x - minX
 				pixel := &(*pix)[index]
 				if *pixel != 'X' && *pixel != 'S' && *pixel != 'B' && ManhattanDist(image.Point{X: x, Y: y}, sensor.sensor) <= sensor.clearRange {
-					*pixel = 'X'
+                    finalIm.Set(x,y,color.Alpha{A:'X'})
+                    *pixel = 'X'
 					count++
 				}
 			}
 		}
 	}
 	return count
-
 }
 
 func CountRows(y1, y2, minX, maxX int, counts *[]int, sensors *[]Sensor, wg *sync.WaitGroup) {
 	for y := y1; y < y2; y++ {
 		rect := image.Rectangle{Min: image.Point{X: minX, Y: y}, Max: image.Point{X: maxX + 1, Y: y + 1}}
 		im := image.NewAlpha(rect)
-		(*counts)[y] = CheckRow(sensors, minX, y, &im.Pix)
+        PrintImage(im)
+        (*counts)[y] = CheckRow(sensors, minX, y, &im.Pix)
 	}
 	wg.Done()
 }
@@ -171,12 +176,16 @@ func main() {
 	minX, maxX, minY, maxY := math.MaxInt, math.MinInt, math.MaxInt, math.MinInt
 	var sensors []Sensor
 	Load(input, &minX, &maxX, &minY, &maxY, &sensors)
-	counts := make([]int, 4000000)
 
-	startY := 2000000 - 500
-	endY := 2000000 + 500
+	counts := make([]int, 20)
+	checkY := 10
+	startY := 0
+	endY := 20
 	divisor := 50
-	//	for divisor := 1; divisor<= 100; divisor+=1 {
+
+    rect := image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 20, Y: 20}}
+    finalIm = image.NewAlpha(rect)
+
 	start := time.Now()
 	step := Max((endY-startY)/divisor, 1)
 	var wg sync.WaitGroup
@@ -187,7 +196,8 @@ func main() {
 	wg.Wait()
 	fmt.Printf("Total execution time with divisor of %d and step of %d:   \t%v\n", divisor, step, time.Since(start))
 	fmt.Printf("Average execution time with divisor of %d and step of %d: \t%.2fms\n", divisor, step, float64(time.Since(start).Milliseconds())/float64(endY-startY))
-	//	}
 
-	fmt.Printf("y: %d (should be this with my input: %d)\n", counts[2000000], 4737567)
+	fmt.Printf("y: %d=%d (should be %d with my input or %d with the example)\n", checkY, counts[checkY], 4737567, 26)
+	PrintImage(finalIm)
+    fmt.Println(finalIm.Pix)
 }
